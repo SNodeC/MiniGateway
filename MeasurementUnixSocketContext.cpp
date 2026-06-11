@@ -4,6 +4,7 @@
 #include <cctype>
 #include <chrono>
 #include <cmath>
+#include <core/socket/SocketAddress.h>
 #include <core/socket/stream/SocketConnection.h>
 #include <exception>
 #include <log/Logger.h>

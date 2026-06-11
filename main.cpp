@@ -15,6 +15,8 @@
 #include <net/in/stream/legacy/SocketClient.h>
 #include <net/un/stream/legacy/SocketServer.h>
 #include <string>
+#include <type_traits>
+#include <utility>
 #include <web/http/http_utils.h>
 
 namespace {
@@ -74,9 +76,10 @@ namespace {
 
     template <typename MeasurementHandler>
     auto startMeasurementSocketServer(MeasurementHandler measurementHandler) {
-        using Server = net::un::stream::legacy::SocketServer<minigateway::MeasurementUnixSocketContextFactory>;
+        using Handler = std::decay_t<MeasurementHandler>;
+        using Server = net::un::stream::legacy::SocketServer<minigateway::MeasurementUnixSocketContextFactory, Handler>;
 
-        Server socketServer("measurement-input", measurementHandler);
+        Server socketServer("measurement-input", std::move(measurementHandler));
         socketServer.listen("/tmp/minigateway-measurements.sock",
                             [](const Server::SocketAddress& socketAddress, const core::socket::State& state) {
                                 reportState("measurement-input", socketAddress, state);
