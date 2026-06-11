@@ -1,6 +1,7 @@
 #include "ConfigSections.h"
 #include "MeasurementBus.h"
 #include "MeasurementState.h"
+#include "MeasurementUnixSocketContextFactory.h"
 #include "MiniGatewayMqtt.h"
 #include "MiniGatewaySocketContextFactory.h"
 
@@ -12,6 +13,7 @@
 #include <log/Logger.h>
 #include <net/config/ConfigInstance.h>
 #include <net/in/stream/legacy/SocketClient.h>
+#include <net/un/stream/legacy/SocketServer.h>
 #include <string>
 #include <web/http/http_utils.h>
 
@@ -70,6 +72,19 @@ namespace {
         return socketClient;
     }
 
+    template <typename MeasurementHandler>
+    auto startMeasurementSocketServer(MeasurementHandler measurementHandler) {
+        using Server = net::un::stream::legacy::SocketServer<minigateway::MeasurementUnixSocketContextFactory>;
+
+        Server socketServer("measurement-input", measurementHandler);
+        socketServer.listen("/tmp/minigateway-measurements.sock",
+                            [](const Server::SocketAddress& socketAddress, const core::socket::State& state) {
+                                reportState("measurement-input", socketAddress, state);
+                            });
+
+        return socketServer;
+    }
+
     template <typename ResponseT>
     void sendMeasurementEvent(const minigateway::Measurement& measurement, const ResponseT& res) {
         res->sendFragment("event: measurement");
@@ -87,6 +102,10 @@ int main(int argc, char* argv[]) {
     minigateway::MeasurementBus bus;
 
     auto acceptMeasurement = [&state, &bus](minigateway::Measurement measurement) {
+        if (measurement.sequence == 0) {
+            measurement.sequence = state.current().sequence + 1;
+        }
+
         state.update(measurement);
         bus.publish(state.current());
     };
@@ -146,7 +165,8 @@ int main(int argc, char* argv[]) {
                    reportState(instanceName, socketAddress, listenState);
                });
 
-    startMqttClient();
+    const auto measurementSocketServer = startMeasurementSocketServer(acceptMeasurement);
+    const auto mqttClient = startMqttClient();
 
     return core::SNodeC::start();
 }
