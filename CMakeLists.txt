@@ -9,7 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(nlohmann_json 3.7.0 REQUIRED)
 
 find_package(
-    snodec 1.0.0 REQUIRED COMPONENTS http-server-express-legacy-in
+    snodec 2.0.0 REQUIRED COMPONENTS http-server-express-legacy-in
                                      net-in-stream-legacy mqtt-client
 )
 
