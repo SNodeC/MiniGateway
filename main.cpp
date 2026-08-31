@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <express/legacy/in/WebApp.h>
 #include <express/middleware/VerboseRequest.h>
-#include <SemanticLog.h>
+#include <Log.h>
 #include <net/config/ConfigInstance.h>
 #include <net/in/stream/legacy/SocketClient.h>
 #include <string>
@@ -20,16 +20,16 @@ namespace {
     void reportState(const std::string& instanceName, const core::socket::SocketAddress& socketAddress, const core::socket::State& state) {
         switch (state) {
             case core::socket::State::OK:
-                snode::semantic::appLog().info() << instanceName << ": connected/listening on '" << socketAddress.toString() << "'";
+                snode::log::application().info() << instanceName << ": connected/listening on '" << socketAddress.toString() << "'";
                 break;
             case core::socket::State::DISABLED:
-                snode::semantic::appLog().info() << instanceName << ": disabled";
+                snode::log::application().info() << instanceName << ": disabled";
                 break;
             case core::socket::State::ERROR:
-                snode::semantic::appLog().error() << instanceName << " " << socketAddress.toString() << ": " << state.what();
+                snode::log::application().error() << instanceName << " " << socketAddress.toString() << ": " << state.what();
                 break;
             case core::socket::State::FATAL:
-                snode::semantic::appLog().critical() << instanceName << " " << socketAddress.toString() << ": " << state.what();
+                snode::log::application().critical() << instanceName << " " << socketAddress.toString() << ": " << state.what();
                 break;
         }
     }
