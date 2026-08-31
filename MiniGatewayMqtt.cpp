@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <iot/mqtt/Topic.h>
 #include <list>
-#include <log/Logger.h>
+#include <SemanticLog.h>
 #include <utility>
 #include <utils/system/signal.h>
 
@@ -31,7 +31,7 @@ namespace minigateway {
     }
 
     void MiniGatewayMqtt::onConnected() {
-        VLOG(1) << "MQTT: initiating session";
+        snode::semantic::appLog().trace() << "MQTT: initiating session";
 
         sendConnect(true, "", "", 0, false, "", "");
     }
@@ -43,7 +43,7 @@ namespace minigateway {
     }
 
     bool MiniGatewayMqtt::onSignal(int signum) {
-        VLOG(1) << "MQTT: exit due to signal " << signum << " (SIG" << utils::system::sigabbrev_np(signum) << ")";
+        snode::semantic::appLog().trace() << "MQTT: exit due to signal " << signum << " (SIG" << utils::system::sigabbrev_np(signum) << ")";
 
         sendDisconnect();
 
@@ -63,7 +63,7 @@ namespace minigateway {
     }
 
     void MiniGatewayMqtt::onPublish(const iot::mqtt::packets::Publish& publish) {
-        VLOG(1) << "MQTT command on " << publish.getTopic() << ": " << publish.getMessage();
+        snode::semantic::appLog().trace() << "MQTT command on " << publish.getTopic() << ": " << publish.getMessage();
     }
 
     void MiniGatewayMqtt::publishMeasurement(const Measurement& measurement) const {
